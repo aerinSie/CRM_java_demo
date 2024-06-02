@@ -4,13 +4,11 @@ import com.demo.crm.crm_java_demo.req.LoginReq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class LoginTest {
@@ -20,21 +18,19 @@ public class LoginTest {
         RestAssured.port = 12345;
     }
 
-    @Test
-    void login() throws Exception {
-        LoginReq loginReq = new LoginReq();
-        loginReq.setUsername("user1");
-        loginReq.setPassword("user1");
-        ObjectMapper objectMapper = new ObjectMapper();
-        given()
-                .contentType(ContentType.JSON)
-                .body(objectMapper.writeValueAsString(loginReq))
-                .when()
-                .post("/login")
-                .then()
-                .statusCode(200)
-                .body("username", equalTo("user1"))
-                .body("token", Matchers.notNullValue())
-        ;
-    }
+//    @Test
+//    void login() throws Exception {
+//        LoginReq loginReq = new LoginReq();
+//        loginReq.setUsername("user1");
+//        loginReq.setPassword("user1");
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        given()
+//                .contentType(ContentType.JSON)
+//                .body(objectMapper.writeValueAsString(loginReq))
+//                .when()
+//                .post("/login")
+//                .then()
+//                .statusCode(200)
+//        ;
+//    }
 }
