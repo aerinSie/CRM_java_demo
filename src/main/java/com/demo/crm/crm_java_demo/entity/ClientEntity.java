@@ -1,5 +1,7 @@
 package com.demo.crm.crm_java_demo.entity;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,14 +12,15 @@ import java.sql.Timestamp;
 @Table(name = "client")
 @Getter
 @Setter
+@ApiModel("ClientEntity")
 public class ClientEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column
-    private Integer companyId;
+    private Long companyId;
     @Column
     private String name;
     @Column

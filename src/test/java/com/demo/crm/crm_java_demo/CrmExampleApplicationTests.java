@@ -44,7 +44,7 @@ public class CrmExampleApplicationTests {
         ClientEntity client = new ClientEntity();
         client.setName("Test Client");
         client.setEmail("test@client.com");
-        client.setCompanyId(1);
+        client.setCompanyId(1L);
 
         ClientEntity savedClient = clientRepository.save(client);
 

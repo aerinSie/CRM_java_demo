@@ -1,16 +1,18 @@
 package com.demo.crm.crm_java_demo.controller;
 
 
+import com.demo.crm.crm_java_demo.constant.SysUserRoles;
 import com.demo.crm.crm_java_demo.entity.ClientEntity;
-import com.demo.crm.crm_java_demo.exception.ResourceNotFoundException;
-import com.demo.crm.crm_java_demo.repository.ClientRepository;
+import com.demo.crm.crm_java_demo.req.ClientReq;
+import com.demo.crm.crm_java_demo.res.ApiResponse;
+import com.demo.crm.crm_java_demo.service.ClientService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,63 +20,63 @@ import java.util.List;
 public class ClientController {
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientService clientService;
 
     @GetMapping
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER", "ROLE_OPERATOR"})
-    public List<ClientEntity> getAllClients() {
-        return clientRepository.findAll();
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER, SysUserRoles.Fields.ROLE_OPERATOR})
+    public ResponseEntity<ApiResponse<List<ClientEntity>>> getAllClients() {
+        List<ClientEntity> list = clientService.getAllClients();
+        return new ResponseEntity<>(new ApiResponse<>(list), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER", "ROLE_OPERATOR"})
-    public ClientEntity getClientById(@PathVariable Integer id) {
-        return clientRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Client not found"));
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER, SysUserRoles.Fields.ROLE_OPERATOR})
+    public ResponseEntity<ApiResponse<ClientEntity>> getClientById(@PathVariable Long id) {
+        ClientEntity result = clientService.getClientById(id);
+        return new ResponseEntity<>(new ApiResponse<>(result), HttpStatus.OK);
     }
 
     @PostMapping
-    @Secured({"ROLE_SUPPER_USER", "ROLE_OPERATOR"})
-    public ClientEntity createClient(@RequestBody ClientEntity client) {
-        String operator = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        client.setCreatedBy(operator);
-        client.setUpdatedBy(operator);
-        return clientRepository.save(client);
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_OPERATOR})
+    public ResponseEntity<ApiResponse<String>> createClient(@RequestBody  @Valid ClientReq req) {
+        try {
+            clientService.createClient(req);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(500, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 
     @PostMapping("/bulk")
-    @Secured({"ROLE_SUPPER_USER", "ROLE_OPERATOR"})
-    public List<ClientEntity> createClients(@RequestBody List<ClientEntity> clients) {
-        String operator = SecurityContextHolder.getContext().getAuthentication().getName();
-        clients.forEach(client -> {
-            client.setCreatedBy(operator);
-            client.setUpdatedBy(operator);
-        });
-        return clientRepository.saveAll(clients);
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_OPERATOR})
+    public ResponseEntity<ApiResponse<String>> createClients(@RequestBody  @Valid List<ClientReq> reqs) {
+        try {
+            clientService.createClients(reqs);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(500, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER"})
-    public ClientEntity updateClient(@PathVariable Integer id, @RequestBody ClientEntity clientDetails) {
-        ClientEntity client = clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found"));
-
-        client.setName(clientDetails.getName());
-        client.setEmail(clientDetails.getEmail());
-        client.setPhone(clientDetails.getPhone());
-        client.setCompanyId(clientDetails.getCompanyId());
-        client.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
-        client.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
-
-        return clientRepository.save(client);
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER})
+    public ResponseEntity<ApiResponse<String>> updateClient(@PathVariable Long id, @RequestBody  @Valid ClientReq req) {
+        try {
+            clientService.updateClient(id, req);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(500, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER"})
-    public void deleteClient(@PathVariable Integer id) {
-        ClientEntity client = clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found"));
-
-        clientRepository.delete(client);
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER})
+    public ResponseEntity<ApiResponse<String>> deleteClient(@PathVariable Long id) {
+        try {
+            clientService.deleteClient(id);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(500, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 }

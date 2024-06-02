@@ -1,15 +1,13 @@
 package com.demo.crm.crm_java_demo.config;
 
 
-import com.demo.crm.crm_java_demo.service.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.demo.crm.crm_java_demo.constant.SysUserRoles;
+import com.demo.crm.crm_java_demo.service.SysUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,7 +23,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
 
-import static com.demo.crm.crm_java_demo.config.SysRole.*;
 
 @Configuration
 @EnableWebSecurity
@@ -60,26 +57,26 @@ public class SecurityConfig {
         UserDetails superUser = User
                 .withUsername("user1")
                 .password(passwordEncoder().encode("user1"))
-                .roles(SUPPER_USER.name())
+                .roles("SUPPER_USER")
                 .build();
 
         UserDetails manager = User
                 .withUsername("user2")
                 .password(passwordEncoder().encode("user2"))
-                .roles(MANAGER.name())
+                .roles("MANAGER")
                 .build();
 
         UserDetails operator = User
                 .withUsername("user3")
                 .password(passwordEncoder().encode("user3"))
-                .roles(OPERATOR.name())
+                .roles("OPERATOR")
                 .build();
         return new InMemoryUserDetailsManager(List.of(superUser, manager, operator));
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService();
+        return new SysUserDetailsService();
     }
 
     //    a. super user: access to all functions.
@@ -91,12 +88,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                ).logout(logout -> logout.logoutUrl("api/logout")
+                ).logout(logout -> logout.logoutUrl("logout")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 ).authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/error/**","/login","/swagger-ui/**", "/v3/api-docs/**",
+                        .requestMatchers("/error/**", "/login", "/swagger-ui/**", "/v3/api-docs/**",
                                 "/swagger-resources/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated()
                 ).build();

@@ -1,12 +1,14 @@
 package com.demo.crm.crm_java_demo.controller;
 
 import com.demo.crm.crm_java_demo.req.LoginReq;
+import com.demo.crm.crm_java_demo.res.ApiResponse;
 import com.demo.crm.crm_java_demo.res.LoginRes;
-import com.demo.crm.crm_java_demo.service.CustomUserDetailsService;
+import com.demo.crm.crm_java_demo.service.SysUserDetailsService;
 import com.demo.crm.crm_java_demo.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SysController {
 
     @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private SysUserDetailsService sysUserDetailsService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -35,12 +37,13 @@ public class SysController {
 
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody LoginReq loginReq, HttpSession session) {
+    public ResponseEntity<ApiResponse<LoginRes>> login(@RequestBody @Valid LoginReq loginReq, HttpSession session) {
         try {
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginReq.getUsername());
+            UserDetails userDetails = sysUserDetailsService.loadUserByUsername(loginReq.getUsername());
 
-            if (!customUserDetailsService.checkPassword(loginReq.getPassword(), userDetails.getPassword())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("錯誤使用者");
+            if (!sysUserDetailsService.checkPassword(loginReq.getPassword(), userDetails.getPassword())) {
+                ApiResponse<LoginRes> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(),"錯誤使用者");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(loginReq.getUsername(), loginReq.getPassword());
@@ -53,19 +56,21 @@ public class SysController {
 
             String token = jwtUtil.generateToken(loginReq.getUsername());
             LoginRes loginRes = new LoginRes(loginReq.getUsername(), token);
-            return ResponseEntity.ok(loginRes);
+
+            return new ResponseEntity<>(new ApiResponse<>(loginRes), HttpStatus.OK);
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            ApiResponse<LoginRes> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PostMapping("/api/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 }

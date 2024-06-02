@@ -15,6 +15,9 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
+    @Value("${jwt.overdue-seconds}")
+    private Long overdueSeconds;
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -43,7 +46,7 @@ public class JwtUtil {
     private String createToken(String subject) {
         return Jwts.builder().setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * overdueSeconds))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }

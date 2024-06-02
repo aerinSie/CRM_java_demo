@@ -13,13 +13,12 @@ import java.sql.Timestamp;
 public class CompanyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column
     private String name;
     @Column
     private String address;
-
     @Column
     private String createdBy;
     @Column

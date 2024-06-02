@@ -1,67 +1,79 @@
 package com.demo.crm.crm_java_demo.controller;
 
 
+import com.demo.crm.crm_java_demo.constant.SysUserRoles;
 import com.demo.crm.crm_java_demo.entity.CompanyEntity;
-import com.demo.crm.crm_java_demo.exception.ResourceNotFoundException;
-import com.demo.crm.crm_java_demo.repository.CompanyRepository;
+import com.demo.crm.crm_java_demo.req.CompanyReq;
+import com.demo.crm.crm_java_demo.res.ApiResponse;
+import com.demo.crm.crm_java_demo.service.CompanyService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 
+@Api(tags = "Companies")
 @RestController
 @RequestMapping("/api/companies")
 public class CompanyController {
 
     @Autowired
-    private CompanyRepository companyRepository;
+    private CompanyService companyService;
 
     @GetMapping
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER", "ROLE_OPERATOR"})
-    public List<CompanyEntity> getAllCompanies() {
-        return companyRepository.findAll();
+    @ApiOperation(value = "查公司列表", notes = "獲取當前所有列表")
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER, SysUserRoles.Fields.ROLE_OPERATOR})
+    public ResponseEntity<ApiResponse<List<CompanyEntity>>> getAllCompanies() {
+        List<CompanyEntity> list = companyService.getAllCompanies();
+        return new ResponseEntity<>(new ApiResponse<>(list), HttpStatus.OK);
+
     }
 
     @GetMapping("/{id}")
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER", "ROLE_OPERATOR"})
-    public CompanyEntity getCompanyById(@PathVariable Integer id) {
-        return companyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+    @ApiOperation(value = "查單一公司", notes = "輸入指定公司ID即回傳公司資料")
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER, SysUserRoles.Fields.ROLE_OPERATOR})
+    public ResponseEntity<ApiResponse<CompanyEntity>> getCompanyById(@PathVariable Long id) {
+        CompanyEntity result = companyService.getCompanyById(id);
+        return new ResponseEntity<>(new ApiResponse<>(result), HttpStatus.OK);
     }
 
     @PostMapping
-    @Secured({"ROLE_SUPPER_USER", "ROLE_OPERATOR"})
-    public CompanyEntity createCompany(@RequestBody CompanyEntity company) {
-        String operator =SecurityContextHolder.getContext().getAuthentication().getName();
-        company.setCreatedBy(operator);
-        company.setUpdatedBy(operator);
-        return companyRepository.save(company);
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_OPERATOR})
+    public ResponseEntity<ApiResponse<String>> createCompany(@RequestBody  @Valid CompanyReq req) {
+        try {
+            companyService.createCompany(req);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(500, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 
 
     @PutMapping("/{id}")
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER"})
-    public CompanyEntity updateCompany(@PathVariable Integer id, @RequestBody CompanyEntity companyDetails) {
-        CompanyEntity company = companyRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
-
-        company.setName(companyDetails.getName());
-        company.setAddress(companyDetails.getName());
-        company.setUpdatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
-        company.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
-
-        return companyRepository.save(company);
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER})
+    public ResponseEntity<ApiResponse<String>> updateCompany(@PathVariable Long id, @RequestBody  @Valid CompanyReq req) {
+        try {
+            companyService.updateCompany(id, req);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(500, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    @Secured({"ROLE_SUPPER_USER", "ROLE_MANAGER"})
-    public void deleteCompany(@PathVariable Integer id) {
-        CompanyEntity company = companyRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
-
-        companyRepository.delete(company);
+    @Secured({SysUserRoles.Fields.ROLE_SUPPER_USER, SysUserRoles.Fields.ROLE_MANAGER})
+    public ResponseEntity<ApiResponse<String>> deleteCompany(@PathVariable Long id) {
+        try {
+            companyService.deleteCompany(id);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(500, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(new ApiResponse<>("ok"), HttpStatus.OK);
     }
 }
