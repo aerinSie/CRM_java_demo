@@ -47,6 +47,8 @@ mvn spring-boot:run
 # 運行生成的JAR文件
 java -jar /target/CRM_java_demo-0.0.1-SNAPSHOT.jar
 ```
+
+* [AWS 上的 swagger 文件](http://52.195.209.124:12345/swagger-ui/index.html#/)
 * [Local 的 Swagger 文件](http://localhost:12345/swagger-ui/index.html)
 
 | 系統權限        | username | password |
