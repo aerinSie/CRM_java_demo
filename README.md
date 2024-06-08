@@ -32,6 +32,32 @@
 # 環境
 * java 17
 
+# 測試號
+| 系統權限        | username | password |
+|-------------|----------|----------|
+| SUPPER_USER | user1    | user1    |
+| MANAGER     | user2    | user2    |
+| OPERATOR    | user3    | user3    |
+# 遠端測試
+* [AWS 上的 swagger 文件](http://52.195.209.124:12345/swagger-ui/index.html#/)
+
+    
+- AWS S3
+  - 將jar檔存放至S3
+  - 建立IAM user 可以存取S3權限
+
+- AWS lightsail 執行個體(Debian)
+  - SSH連接
+    ```
+    sudo apt install openjdk-17-jdk
+    sudo apt-get install awscli
+    aws configure
+    aws s3 cp s3://[your-bucket-name]/[your-jar-file].jar .
+    java -jar CRM_java_demo-0.0.1-SNAPSHOT.jar
+    ```
+  - 開啟防火牆
+    - AWS Lightsail Web > 該執行個體 > 聯網 > IPV4防火牆 > 新增規則 > 協定:TCP 連接埠:12345 > 儲存 
+
 # Local測試
 
 * 導航到项目根目录後再執行以下代碼
@@ -48,14 +74,9 @@ mvn spring-boot:run
 java -jar /target/CRM_java_demo-0.0.1-SNAPSHOT.jar
 ```
 
-* [AWS 上的 swagger 文件](http://52.195.209.124:12345/swagger-ui/index.html#/)
 * [Local 的 Swagger 文件](http://localhost:12345/swagger-ui/index.html)
 
-| 系統權限        | username | password |
-|-------------|----------|----------|
-| SUPPER_USER | user1    | user1    |
-| MANAGER     | user2    | user2    |
-| OPERATOR    | user3    | user3    |
+
 
 
 
