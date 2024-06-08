@@ -57,7 +57,10 @@
     ```
   - 開啟防火牆
     - AWS Lightsail Web > 該執行個體 > 聯網 > IPV4防火牆 > 新增規則 > 協定:TCP 連接埠:12345 > 儲存 
-
+- 查看運行中log > ssh連接
+```
+tail -f crm_java_demo.log
+```
 # Local測試
 
 * 導航到项目根目录後再執行以下代碼
